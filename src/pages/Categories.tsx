@@ -1,51 +1,59 @@
 import React, { useState } from 'react';
-import VerticalFeed from '../components/Feed/VerticalFeed';
+import { motion } from 'framer-motion';
+import VerticalFeed from '../components/features/VerticalFeed';
+import CategoryPills from '../components/ui/CategoryPills';
 import { useStore } from '../store/useStore';
 
 const Categories: React.FC = () => {
-  const { events } = useStore();
+  const { mediaItems, setCategory } = useStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categories = [
-    { value: 'all', label: 'All' },
-    { value: 'technical', label: 'Technical' },
-    { value: 'cultural', label: 'Cultural' },
-    { value: 'guest-talks', label: 'Guest Talks' },
-    { value: 'inter-college', label: 'Inter College' },
-    { value: 'inter-department', label: 'Inter Dept' },
-    { value: 'sports', label: 'Sports' }
+    { value: 'all', label: 'All', emoji: '🌟' },
+    { value: 'technical', label: 'Tech', emoji: '🚀' },
+    { value: 'cultural', label: 'Culture', emoji: '🎭' },
+    { value: 'guest-talks', label: 'Talks', emoji: '🎤' },
+    { value: 'inter-college', label: 'Inter-College', emoji: '🏆' },
+    { value: 'inter-department', label: 'Inter-Dept', emoji: '⚔️' },
+    { value: 'sports', label: 'Sports', emoji: '💪' }
   ];
 
-  const filteredEvents = selectedCategory === 'all' 
-    ? events 
-    : events.filter(event => event.category === selectedCategory);
+  const filteredItems = selectedCategory === 'all' 
+    ? mediaItems 
+    : mediaItems.filter(item => item.category === selectedCategory);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCategory(category);
+  };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Category Tabs */}
-      <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
-          {categories.map((category) => (
-            <button
-              key={category.value}
-              onClick={() => setSelectedCategory(category.value)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                selectedCategory === category.value
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <motion.div
+      className="flex flex-col h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Category Header */}
+      <motion.div
+        className="glass-nav border-b border-white/10 pt-12 pb-3"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        <CategoryPills
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      </motion.div>
 
       {/* Feed */}
       <div className="flex-1">
-        <VerticalFeed events={filteredEvents} />
+        <VerticalFeed items={filteredItems} />
       </div>
-    </div>
+    </motion.div>
   );
 };
 

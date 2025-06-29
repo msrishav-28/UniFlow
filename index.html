@@ -4,13 +4,166 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#3B82F6" />
+    <meta name="theme-color" content="#6366f1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>College Events</title>
+    <meta name="apple-mobile-web-app-title" content="College Events" />
+    <meta name="description" content="Discover amazing college events through beautiful media with modern glassmorphism design" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="College Events - Discover Amazing Events" />
+    <meta property="og:description" content="The most modern way to discover college events with TikTok-style vertical scrolling and glassmorphism UI" />
+    <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="College Events - Discover Amazing Events" />
+    <meta property="twitter:description" content="The most modern way to discover college events with TikTok-style vertical scrolling and glassmorphism UI" />
+    <meta property="twitter:image" content="/og-image.png" />
+    
+    <title>College Events - Discover Amazing Events ✨</title>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Critical CSS for loading state -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        overflow-x: hidden;
+      }
+      
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(99, 102, 241, 0.3);
+        border-top: 3px solid #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        color: white;
+        margin-top: 20px;
+        font-size: 16px;
+        font-weight: 500;
+        opacity: 0.8;
+      }
+    </style>
   </head>
   <body>
+    <div id="loading">
+      <div style="text-align: center;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Events...</div>
+      </div>
+    </div>
+    
     <div id="root"></div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <script>
+      // Hide loading screen when app loads
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('loading');
+          if (loading) {
+            loading.style.opacity = '0';
+            loading.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+              loading.remove();
+            }, 500);
+          }
+        }, 1000);
+      });
+      
+      // PWA install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install button after 10 seconds
+        setTimeout(() => {
+          if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+            const installBanner = document.createElement('div');
+            installBanner.innerHTML = `
+              <div style="
+                position: fixed;
+                bottom: 100px;
+                left: 16px;
+                right: 16px;
+                background: rgba(99, 102, 241, 0.95);
+                backdrop-filter: blur(12px);
+                color: white;
+                padding: 16px;
+                border-radius: 16px;
+                text-align: center;
+                z-index: 1000;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+              ">
+                <div style="font-weight: 600; margin-bottom: 8px;">Install College Events</div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 12px;">Get the full app experience!</div>
+                <button onclick="installApp()" style="
+                  background: white;
+                  color: #6366f1;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 8px;
+                  font-weight: 600;
+                  margin-right: 8px;
+                  cursor: pointer;
+                ">Install</button>
+                <button onclick="dismissInstall()" style="
+                  background: transparent;
+                  color: white;
+                  border: 1px solid rgba(255,255,255,0.3);
+                  padding: 8px 16px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                ">Later</button>
+              </div>
+            `;
+            document.body.appendChild(installBanner);
+            
+            window.installApp = () => {
+              deferredPrompt.prompt();
+              deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                installBanner.remove();
+              });
+            };
+            
+            window.dismissInstall = () => {
+              installBanner.remove();
+            };
+          }
+        }, 10000);
+      });
+    </script>
   </body>
 </html>

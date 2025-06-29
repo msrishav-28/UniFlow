@@ -1,49 +1,60 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AppState, Event, User } from '../types';
-import { sampleEvents } from '../data/sampleEvents';
+import { AppState, MediaItem, User } from '../types';
+import { sampleMediaItems } from '../data/sampleData';
 
 const initialUser: User = {
+  id: '1',
   email: 'student@college.edu',
-  name: 'Alex Johnson',
-  bookmarkedEvents: []
+  name: 'Alex Chen',
+  avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100',
+  bookmarkedEvents: [],
+  preferences: {
+    categories: ['technical', 'cultural'],
+    notifications: true,
+    autoplay: true
+  }
 };
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      events: sampleEvents,
+      mediaItems: sampleMediaItems,
       user: initialUser,
       currentCategory: 'all',
+      isLoading: false,
+      lastRefresh: Date.now(),
       
-      addEvent: (eventData) => {
-        const newEvent: Event = {
-          ...eventData,
+      addMediaItem: (itemData) => {
+        const newItem: MediaItem = {
+          ...itemData,
           id: Date.now().toString(),
           uploadedAt: Date.now(),
-          isBookmarked: false
+          isBookmarked: false,
+          viewCount: 0,
+          engagementTime: 0
         };
         
         set((state) => ({
-          events: [newEvent, ...state.events]
+          mediaItems: [newItem, ...state.mediaItems]
         }));
       },
       
-      toggleBookmark: (eventId) => {
+      toggleBookmark: (itemId) => {
         set((state) => {
-          const updatedEvents = state.events.map(event =>
-            event.id === eventId
-              ? { ...event, isBookmarked: !event.isBookmarked }
-              : event
+          const updatedItems = state.mediaItems.map(item =>
+            item.id === itemId
+              ? { ...item, isBookmarked: !item.isBookmarked }
+              : item
           );
           
-          const event = updatedEvents.find(e => e.id === eventId);
-          const updatedBookmarks = event?.isBookmarked
-            ? [...state.user.bookmarkedEvents, eventId]
-            : state.user.bookmarkedEvents.filter(id => id !== eventId);
+          const item = updatedItems.find(i => i.id === itemId);
+          const updatedBookmarks = item?.isBookmarked
+            ? [...state.user.bookmarkedEvents, itemId]
+            : state.user.bookmarkedEvents.filter(id => id !== itemId);
           
           return {
-            events: updatedEvents,
+            mediaItems: updatedItems,
             user: {
               ...state.user,
               bookmarkedEvents: updatedBookmarks
@@ -56,27 +67,52 @@ export const useStore = create<AppState>()(
         set({ currentCategory: category });
       },
       
-      cleanupOldEvents: () => {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
+      updateEngagement: (itemId, timeSpent) => {
         set((state) => ({
-          events: state.events.filter(event => 
-            new Date(event.eventDate) >= thirtyDaysAgo
+          mediaItems: state.mediaItems.map(item =>
+            item.id === itemId
+              ? { 
+                  ...item, 
+                  engagementTime: item.engagementTime + timeSpent,
+                  viewCount: item.viewCount + (timeSpent > 3 ? 1 : 0)
+                }
+              : item
           )
         }));
       },
       
-      refreshEvents: () => {
-        // Simulate refresh - in real app this would fetch from API
-        get().cleanupOldEvents();
+      refreshFeed: async () => {
+        set({ isLoading: true });
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Clean up old items and refresh
+        get().cleanupOldItems();
+        
+        set({ 
+          isLoading: false,
+          lastRefresh: Date.now()
+        });
+      },
+      
+      cleanupOldItems: () => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        set((state) => ({
+          mediaItems: state.mediaItems.filter(item => 
+            new Date(item.eventDate) >= thirtyDaysAgo
+          )
+        }));
       }
     }),
     {
       name: 'college-events-storage',
       partialize: (state) => ({
-        events: state.events,
-        user: state.user
+        mediaItems: state.mediaItems,
+        user: state.user,
+        lastRefresh: state.lastRefresh
       })
     }
   )

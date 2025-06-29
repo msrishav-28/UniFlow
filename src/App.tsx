@@ -1,18 +1,20 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import BottomNavigation from './components/Layout/BottomNavigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import FloatingNavBar from './components/ui/FloatingNavBar';
 import Home from './pages/Home';
 import Categories from './pages/Categories';
+import Add from './pages/Add';
 import Saved from './pages/Saved';
 import Profile from './pages/Profile';
 import { useStore } from './store/useStore';
 
 function App() {
-  const { cleanupOldEvents } = useStore();
+  const { cleanupOldItems } = useStore();
 
   useEffect(() => {
-    // Clean up old events on app load
-    cleanupOldEvents();
+    // Clean up old items on app load
+    cleanupOldItems();
 
     // Set up dark mode based on system preference
     const updateTheme = () => {
@@ -26,21 +28,34 @@ function App() {
     updateTheme();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
 
+    // PWA install prompt
+    let deferredPrompt: any;
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     return () => {
       window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', updateTheme);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, [cleanupOldEvents]);
+  }, [cleanupOldItems]);
 
   return (
     <Router>
-      <div className="bg-white dark:bg-slate-900 min-h-screen max-w-sm mx-auto relative overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/saved" element={<Saved />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-        <BottomNavigation />
+      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen max-w-sm mx-auto relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/add" element={<Add />} />
+            <Route path="/saved" element={<Saved />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </AnimatePresence>
+        <FloatingNavBar />
       </div>
     </Router>
   );
