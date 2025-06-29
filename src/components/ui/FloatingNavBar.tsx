@@ -19,8 +19,8 @@ const FloatingNavBar: React.FC = () => {
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
-      <div className="glass-nav rounded-3xl px-6 py-4 mx-auto max-w-sm relative">
-        <div className="flex justify-around items-end relative">
+      <div className="glass-nav rounded-3xl px-4 py-3 mx-auto max-w-sm">
+        <div className="flex justify-around items-center">
           {navItems.map(({ path, icon: Icon, label, isCenter }) => (
             <NavLink
               key={path}
@@ -28,8 +28,8 @@ const FloatingNavBar: React.FC = () => {
               className={({ isActive }) => `
                 relative flex flex-col items-center justify-center transition-all duration-300
                 ${isCenter 
-                  ? 'absolute left-1/2 transform -translate-x-1/2 -top-8 p-4 rounded-2xl gradient-primary shadow-xl glow-primary' 
-                  : 'p-3 rounded-xl flex-1'
+                  ? 'p-4 -mt-6 rounded-2xl gradient-primary shadow-lg glow-primary' 
+                  : 'p-3 rounded-xl'
                 }
                 ${isActive && !isCenter
                   ? 'bg-white/20 text-white' 
@@ -42,12 +42,11 @@ const FloatingNavBar: React.FC = () => {
               {({ isActive }) => (
                 <motion.div
                   whileTap={{ scale: 0.9 }}
-                  whileHover={{ scale: isCenter ? 1.05 : 1 }}
                   className="flex flex-col items-center"
                 >
                   <Icon 
-                    size={isCenter ? 28 : 20} 
-                    className={`${isCenter ? 'mb-1' : 'mb-1'} ${isActive && !isCenter ? 'text-white' : ''}`} 
+                    size={isCenter ? 24 : 20} 
+                    className={`mb-1 ${isActive && !isCenter ? 'text-white' : ''}`} 
                   />
                   <span className={`text-xs font-medium ${isCenter ? 'text-white' : ''}`}>
                     {label}
