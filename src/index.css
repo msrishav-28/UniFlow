@@ -1,8 +1,12 @@
+@import './styles/premium-design-system.css';
+
+/* Keep your existing Tailwind imports below */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* CSS Variables for Glassmorphism Theme */
+/*
 :root {
   --primary: #6366f1;
   --secondary: #ec4899;
@@ -15,8 +19,10 @@
   --dark-bg: #0f0f0f;
   --dark-surface: #1a1a1a;
 }
+*/
 
 /* Base Styles */
+/*
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -45,8 +51,10 @@ body {
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
+*/
 
 /* Glassmorphism Components */
+/*
 .glass-card {
   background: var(--glass-white);
   backdrop-filter: blur(var(--blur-amount));
@@ -70,8 +78,10 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+*/
 
 /* Gradient Backgrounds */
+/*
 .gradient-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
@@ -88,8 +98,10 @@ body {
     rgba(0, 0, 0, 0.6) 100%
   );
 }
+*/
 
 /* Scrollbar Styles */
+/*
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -99,7 +111,6 @@ body {
   display: none;
 }
 
-/* Custom Scrollbar for Desktop */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -113,8 +124,10 @@ body {
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
 }
+*/
 
 /* Animations */
+/*
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -154,8 +167,10 @@ body {
 .animate-liquid-pull {
   animation: liquidPull 0.3s ease-out;
 }
+*/
 
 /* Utility Classes */
+/*
 .line-clamp-1 {
   overflow: hidden;
   display: -webkit-box;
@@ -176,8 +191,10 @@ body {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
+*/
 
 /* Snap Scrolling */
+/*
 .snap-container {
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
@@ -187,8 +204,10 @@ body {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
+*/
 
 /* Loading Skeleton */
+/*
 .skeleton {
   background: linear-gradient(
     90deg,
@@ -199,8 +218,10 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+*/
 
 /* Glow Effects */
+/*
 .glow-primary {
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
 }
@@ -212,21 +233,27 @@ body {
 .glow-accent {
   box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
 }
+*/
 
 /* Focus Styles */
+/*
 .focus-glow:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
 }
+*/
 
 /* Media Queries for Responsive Design */
+/*
 @media (max-width: 428px) {
   .glass-card {
     border-radius: 12px;
   }
 }
+*/
 
 /* PWA Specific Styles */
+/*
 @media (display-mode: standalone) {
   body {
     -webkit-user-select: none;
@@ -238,8 +265,10 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+*/
 
 /* Prevent zoom on input focus (iOS) */
+/*
 input[type="text"], 
 input[type="email"], 
 input[type="number"], 
@@ -250,15 +279,19 @@ textarea,
 select {
   font-size: 16px;
 }
+*/
 
 /* Dark mode improvements */
+/*
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
   }
 }
+*/
 
 /* Reduced motion */
+/*
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -266,11 +299,14 @@ select {
     transition-duration: 0.01ms !important;
   }
 }
+*/
 
 /* High contrast mode */
+/*
 @media (prefers-contrast: high) {
   .glass-card {
     border-width: 2px;
     background: rgba(255, 255, 255, 0.2);
   }
 }
+*/

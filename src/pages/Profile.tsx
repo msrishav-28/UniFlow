@@ -18,10 +18,16 @@ import {
 import { useStore } from '../store/useStore';
 import GlassCard from '../components/ui/GlassCard';
 
-const Profile: React.FC = () => {
+// Add these props:
+interface ProfileProps {
+  onToggleTheme?: () => void;
+  currentTheme?: string;
+}
+
+const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light' }) => {
   const { user, mediaItems } = useStore();
   const [showSettings, setShowSettings] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(currentTheme === 'dark');
   const [notifications, setNotifications] = useState(user.preferences.notifications);
   const [autoplay, setAutoplay] = useState(user.preferences.autoplay);
   
@@ -51,6 +57,11 @@ const Profile: React.FC = () => {
       }
     }
   };
+
+  // Sync darkMode state with currentTheme prop
+  React.useEffect(() => {
+    setDarkMode(currentTheme === 'dark');
+  }, [currentTheme]);
 
   return (
     <motion.div
@@ -227,7 +238,7 @@ const Profile: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Dark Mode */}
+                  {/* Theme Toggle */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       {darkMode ? (
@@ -238,7 +249,10 @@ const Profile: React.FC = () => {
                       <span className="text-white text-sm">Dark Mode</span>
                     </div>
                     <button
-                      onClick={() => setDarkMode(!darkMode)}
+                      onClick={() => {
+                        setDarkMode(!darkMode);
+                        if (onToggleTheme) onToggleTheme();
+                      }}
                       className={`w-12 h-6 rounded-full transition-colors ${
                         darkMode ? 'bg-blue-500' : 'bg-white/20'
                       }`}

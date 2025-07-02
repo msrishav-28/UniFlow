@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import VerticalFeed from '../components/features/VerticalFeed';
-import CategoryPills from '../components/ui/CategoryPills';
+import PremiumVerticalFeed from '../components/features/PremiumVerticalFeed';
 import { useStore } from '../store/useStore';
 
 const Categories: React.FC = () => {
@@ -29,7 +28,7 @@ const Categories: React.FC = () => {
 
   return (
     <motion.div
-      className="flex flex-col h-screen"
+      className="flex flex-col h-screen bg-surface-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -37,21 +36,33 @@ const Categories: React.FC = () => {
     >
       {/* Category Header */}
       <motion.div
-        className="glass-nav border-b border-white/10 pt-12 pb-3"
+        className="glass-surface-elevated border-b border-border-primary pt-12 pb-3 px-5"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <CategoryPills
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+        <div className="flex space-x-3 overflow-x-auto scrollbar-hide py-2">
+          {categories.map((category) => (
+            <motion.button
+              key={category.value}
+              onClick={() => handleCategoryChange(category.value)}
+              className={`flex-shrink-0 px-4 py-2 rounded-2xl text-body-sm font-medium transition-all ${
+                selectedCategory === category.value
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg'
+                  : 'glass-surface text-secondary hover:text-primary'
+              }`}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="mr-2">{category.emoji}</span>
+              {category.label}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
       {/* Feed */}
       <div className="flex-1">
-        <VerticalFeed items={filteredItems} />
+        <PremiumVerticalFeed items={filteredItems} />
       </div>
     </motion.div>
   );

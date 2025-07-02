@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import VerticalFeed from '../components/features/VerticalFeed';
+import PremiumVerticalFeed from '../components/features/PremiumVerticalFeed';
 import { useStore } from '../store/useStore';
+import { pageVariants } from '../utils/animations';
 
 const Home: React.FC = () => {
   const { mediaItems, cleanupOldItems } = useStore();
@@ -10,26 +11,26 @@ const Home: React.FC = () => {
     cleanupOldItems();
   }, [cleanupOldItems]);
 
-  // Sort items by engagement and recency for better algorithm
+  // Enhanced algorithm for better content
   const sortedItems = [...mediaItems].sort((a, b) => {
-    const aScore = a.viewCount * 0.3 + a.engagementTime * 0.7;
-    const bScore = b.viewCount * 0.3 + b.engagementTime * 0.7;
+    const aScore = (a.viewCount * 0.3) + (a.engagementTime * 0.7) + (a.isBookmarked ? 100 : 0);
+    const bScore = (b.viewCount * 0.3) + (b.engagementTime * 0.7) + (b.isBookmarked ? 100 : 0);
     
-    if (aScore === bScore) {
-      return b.uploadedAt - a.uploadedAt; // More recent first
+    if (Math.abs(aScore - bScore) < 10) {
+      return b.uploadedAt - a.uploadedAt;
     }
     
-    return bScore - aScore; // Higher engagement first
+    return bScore - aScore;
   });
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
     >
-      <VerticalFeed items={sortedItems} />
+      <PremiumVerticalFeed items={sortedItems} />
     </motion.div>
   );
 };
