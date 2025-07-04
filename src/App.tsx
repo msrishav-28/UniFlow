@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumNavigation from './components/ui/PremiumNavigation';
@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import { useStore } from './store/useStore';
 import { FeedbackWidget } from './components/feedback/FeedbackWidget';
 import { analyticsService } from './services/analyticsService';
+import { EdgeSwipeNavigation } from './components/GestureNavigation';
 
 // Navigation wrapper component
 function NavigationWrapper() {
@@ -17,7 +18,7 @@ function NavigationWrapper() {
   return (
     <PremiumNavigation 
       currentPath={window.location.pathname}
-      onNavigate={(path) => navigate(path)}
+      onNavigate={(path: string) => navigate(path)}
     />
   );
 }
@@ -85,6 +86,7 @@ function App() {
         </AnimatePresence>
         
         <NavigationWrapper />
+        <EdgeSwipeNavigation />
 
         {/* Add Page Modal */}
         <AnimatePresence>

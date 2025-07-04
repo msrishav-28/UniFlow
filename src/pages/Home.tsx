@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import PremiumVerticalFeed from '../components/features/PremiumVerticalFeed';
 import { useStore } from '../store/useStore';
 import { pageVariants } from '../utils/animations';
+import { SwipeablePage } from '../components/GestureNavigation';
 
 const Home: React.FC = () => {
   const { mediaItems, cleanupOldItems } = useStore();
@@ -23,14 +24,16 @@ const Home: React.FC = () => {
   });
 
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
-      <PremiumVerticalFeed items={sortedItems} />
-    </motion.div>
+    <SwipeablePage>
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        <PremiumVerticalFeed items={sortedItems} />
+      </motion.div>
+    </SwipeablePage>
   );
 };
 

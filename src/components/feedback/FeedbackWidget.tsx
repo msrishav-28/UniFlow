@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageSquare, Bug, X, Send, Camera, 
@@ -8,6 +8,7 @@ import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 import { supabase } from '../../services/supabase';
 import { haptics } from '../../utils/hapticFeedback';
+import { analyticsService } from '../../services/analyticsService';
 
 export const FeedbackWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,7 +81,8 @@ export const FeedbackWidget: React.FC = () => {
       if (error) throw error;
 
       // Track the feedback submission
-      analytics.trackEvent('feedback_submitted', {
+      // Track feedback submission
+      analyticsService.trackEvent('feedback_submitted', {
         feedback_type: type,
         has_screenshot: !!screenshot,
       });

@@ -1,13 +1,32 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Upload, Calendar, MapPin, Users, Tag, 
-  Image as ImageIcon, Video, Sparkles, ChevronDown 
+  Image as ImageIcon, Video, Sparkles, FileText
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { VideoPromotion } from '../components/features/VideoPromotion';
 
-const PremiumAddPage = ({ onClose }) => {
-  const fileInputRef = useRef(null);
-  const [formData, setFormData] = useState({
+interface PremiumAddPageProps {
+  onClose: () => void;
+}
+
+interface FormData {
+  eventTitle: string;
+  description: string;
+  category: string;
+  eventDate: string;
+  location: string;
+  organizer: string;
+  tags: string;
+  mediaUrl: string;
+  type: 'image' | 'video' | 'pdf';
+  pageCount?: number;
+}
+
+const PremiumAddPage = ({ onClose }: PremiumAddPageProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState<FormData>({
     eventTitle: '',
     description: '',
     category: 'technical',
@@ -19,10 +38,13 @@ const PremiumAddPage = ({ onClose }) => {
     type: 'image'
   });
   
-  const [previewMedia, setPreviewMedia] = useState(null);
+  const [previewMedia, setPreviewMedia] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [promotionalVideo, setPromotionalVideo] = useState<string | null>(null);
+
+  console.log('Promotional video:', promotionalVideo); // Log for debugging
 
   const categories = [
     { value: 'technical', label: 'Technical', emoji: '🚀', color: 'from-blue-500 to-blue-600' },
@@ -33,7 +55,7 @@ const PremiumAddPage = ({ onClose }) => {
     { value: 'sports', label: 'Sports', emoji: '💪', color: 'from-yellow-500 to-orange-500' }
   ];
 
-  const handleMediaUpload = (file) => {
+  const handleMediaUpload = (file: File) => {
     if (!file) return;
 
     const isImage = file.type.startsWith('image/');
@@ -54,28 +76,29 @@ const PremiumAddPage = ({ onClose }) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = event.target?.result;
-      setPreviewMedia(result);
+      if (result && typeof result === 'string') {
+        setPreviewMedia(result);
 
-      if (isPDF) {
-        // For now, set a default page count. To get real page count, use PDF.js.
-        setFormData(prev => ({
-          ...prev,
-          mediaUrl: result,
-          type: 'pdf',
-          pageCount: 1 // TODO: Replace with actual page count using PDF.js
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          mediaUrl: result,
-          type: isImage ? 'image' : 'video'
-        }));
+        if (isPDF) {
+          setFormData(prev => ({
+            ...prev,
+            mediaUrl: result,
+            type: 'pdf' as const,
+            pageCount: 1 // TODO: Replace with actual page count using PDF.js
+          }));
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            mediaUrl: result,
+            type: isImage ? 'image' as const : 'video' as const
+          }));
+        }
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.mediaUrl || !formData.eventTitle || !formData.eventDate) {
@@ -92,8 +115,6 @@ const PremiumAddPage = ({ onClose }) => {
       onClose?.();
     }, 1500);
   };
-
-  const selectedCategory = categories.find(c => c.value === formData.category);
 
   return (
     <motion.div
@@ -188,7 +209,7 @@ const PremiumAddPage = ({ onClose }) => {
                     </>
                   ) : formData.type === 'pdf' ? (
                     <>
-                      <Document size={14} className="mr-1" />
+                      <FileText size={14} className="mr-1" />
                       PDF
                     </>
                   ) : (
@@ -422,6 +443,29 @@ const PremiumAddPage = ({ onClose }) => {
               />
             </div>
           </div>
+
+          {/* Promotional Video */}
+          <motion.div
+            className="my-6"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <label className="text-body font-semibold text-primary mb-3 block">
+              Promotional Video (Optional)
+            </label>
+            <p className="text-body-sm text-secondary mb-4">
+              Add a short video to promote your event
+            </p>
+            
+            <VideoPromotion
+              eventId={formData.eventTitle}
+              onUploadComplete={(videoUrl) => {
+                setPromotionalVideo(videoUrl);
+                toast.success('Promotional video uploaded!');
+              }}
+            />
+          </motion.div>
         </motion.div>
 
         {/* Submit Button */}
