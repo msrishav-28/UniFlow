@@ -38,15 +38,16 @@ const PremiumAddPage = ({ onClose }) => {
 
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
-    
-    if (!isImage && !isVideo) {
-      alert('Please select an image or video file');
+    const isPDF = file.type === 'application/pdf';
+
+    if (!isImage && !isVideo && !isPDF) {
+      alert('Please select an image, video, or PDF file');
       return;
     }
 
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    const maxSize = isVideo ? 50 * 1024 * 1024 : isPDF ? 20 * 1024 * 1024 : 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert(`File size should be less than ${isVideo ? '50MB' : '10MB'}`);
+      alert(`File size should be less than ${isVideo ? '50MB' : isPDF ? '20MB' : '10MB'}`);
       return;
     }
 
@@ -54,11 +55,22 @@ const PremiumAddPage = ({ onClose }) => {
     reader.onload = (event) => {
       const result = event.target?.result;
       setPreviewMedia(result);
-      setFormData(prev => ({ 
-        ...prev, 
-        mediaUrl: result,
-        type: isImage ? 'image' : 'video'
-      }));
+
+      if (isPDF) {
+        // For now, set a default page count. To get real page count, use PDF.js.
+        setFormData(prev => ({
+          ...prev,
+          mediaUrl: result,
+          type: 'pdf',
+          pageCount: 1 // TODO: Replace with actual page count using PDF.js
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          mediaUrl: result,
+          type: isImage ? 'image' : 'video'
+        }));
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -139,6 +151,12 @@ const PremiumAddPage = ({ onClose }) => {
                   className="w-full h-64 object-cover"
                   controls
                 />
+              ) : formData.type === 'pdf' ? (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-100">
+                  <p className="text-body text-center text-secondary">
+                    PDF Preview is not available. File uploaded: {formData.mediaUrl.split('/').pop()}
+                  </p>
+                </div>
               ) : (
                 <img
                   src={previewMedia}
@@ -167,6 +185,11 @@ const PremiumAddPage = ({ onClose }) => {
                     <>
                       <Video size={14} className="mr-1" />
                       Video
+                    </>
+                  ) : formData.type === 'pdf' ? (
+                    <>
+                      <Document size={14} className="mr-1" />
+                      PDF
                     </>
                   ) : (
                     <>
@@ -242,7 +265,7 @@ const PremiumAddPage = ({ onClose }) => {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/*,video/*,application/pdf"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleMediaUpload(file);

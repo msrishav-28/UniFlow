@@ -176,7 +176,7 @@ export const sampleMediaItems: MediaItem[] = [
     isBookmarked: false,
     viewCount: 2543,
     engagementTime: 0,
-    uploadedAt: Date.now() - 864000000,
+    uploadedAt: Date.now() - 86400000,
     tags: ['ML', 'Workshop', 'Hands-on'],
     location: 'Computer Lab',
     organizer: 'AI Club'
@@ -269,5 +269,45 @@ export const sampleMediaItems: MediaItem[] = [
     tags: ['Mental Health', 'Wellness', 'Support'],
     location: 'Counseling Center',
     organizer: 'Wellness Committee'
+  },
+
+  // Add PDF items
+  {
+    id: '16',
+    type: 'pdf',
+    mediaUrl: '/pdfs/tech-symposium-2024.pdf',
+    coverImage: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=400&h=711',
+    category: 'technical',
+    eventDate: '2024-04-15',
+    eventTitle: 'Tech Symposium 2024 - Complete Guide',
+    description: 'Official 43-page event brochure with schedule, speakers, and workshops',
+    pageCount: 43,
+    aspectRatio: '9:16',
+    isBookmarked: false,
+    viewCount: 567,
+    engagementTime: 0,
+    uploadedAt: Date.now() - 86400000,
+    tags: ['Symposium', 'Tech', 'Brochure'],
+    location: 'Main Campus',
+    organizer: 'Tech Department'
+  },
+  {
+    id: '17',
+    type: 'pdf',
+    mediaUrl: '/pdfs/cultural-fest-handbook.pdf',
+    coverImage: 'https://images.pexels.com/photos/1387174/pexels-photo-1387174.jpeg?auto=compress&cs=tinysrgb&w=400&h=711',
+    category: 'cultural',
+    eventDate: '2024-04-20',
+    eventTitle: 'Cultural Fest 2024 Handbook',
+    description: 'Everything you need to know about the biggest cultural event',
+    pageCount: 28,
+    aspectRatio: '9:16',
+    isBookmarked: false,
+    viewCount: 892,
+    engagementTime: 0,
+    uploadedAt: Date.now() - 172800000,
+    tags: ['Cultural', 'Handbook', 'Guide'],
+    location: 'Various Venues',
+    organizer: 'Cultural Committee'
   }
 ];

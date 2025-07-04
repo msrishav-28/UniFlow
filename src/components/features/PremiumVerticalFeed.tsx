@@ -1,25 +1,40 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { RefreshCw, Wifi, WifiOff, Heart, Share2, Calendar, MapPin, Tag, Users } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 import { useViewportLoader } from '../../hooks/useViewportLoader';
 import { getOptimizedUrl } from '../../utils/imageOptimizer';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
-// Import your store at the top
-import { useStore } from '../../store/useStore';
 import { haptics } from '../../utils/hapticFeedback';
 import { FeedSkeleton } from '../ui/Skeleton';
 import { ProgressiveImage } from '../ui/ProgressiveImage';
+import { PDFStackView } from '../ui/PDFStackView';
 
 // Premium FeedItem Component
-const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) => {
+interface FeedItemProps {
+  item: any;
+  isActive: boolean;
+  onBookmark: (id: string) => void;
+  onShare: (item: any) => void;
+  onEngagement: (id: string, time: number) => void;
+}
+
+const PremiumFeedItem: React.FC<FeedItemProps> = ({ 
+  item, 
+  isActive, 
+  onBookmark, 
+  onShare, 
+  onEngagement 
+}) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const { hasBeenInViewport } = useViewportLoader(itemRef, {
-    rootMargin: '100px' // Preload items 100px before they enter viewport
+    rootMargin: '100px'
   });
+  
   const [showInfo, setShowInfo] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const startTimeRef = useRef(Date.now());
-
+  const [showDetails, setShowDetails] = useState(false);
+  const startTimeRef = useRef<number>(Date.now());
+  
   // Auto-hide info after 4 seconds
   useEffect(() => {
     if (isActive) {
@@ -39,7 +54,7 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
     }
   }, [isActive, item.id, onEngagement]);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
@@ -51,8 +66,8 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
     return 'Past event';
   };
 
-  const getCategoryStyle = (category) => {
-    const styles = {
+  const getCategoryStyle = (category: string) => {
+    const styles: Record<string, string> = {
       technical: 'bg-gradient-to-r from-blue-500 to-blue-600',
       cultural: 'bg-gradient-to-r from-purple-500 to-pink-500',
       'guest-talks': 'bg-gradient-to-r from-emerald-500 to-teal-500',
@@ -61,6 +76,33 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
       sports: 'bg-gradient-to-r from-yellow-500 to-orange-500'
     };
     return styles[category] || 'bg-gradient-to-r from-gray-500 to-gray-600';
+  };
+
+  const getCategoryEmoji = (category: string) => {
+    const emojis: Record<string, string> = {
+      technical: '🚀',
+      cultural: '🎭',
+      'guest-talks': '🎤',
+      'inter-college': '🏆',
+      'inter-department': '⚔️',
+      sports: '💪'
+    };
+    return emojis[category] || '📅';
+  };
+
+  const handleBookmarkClick = () => {
+    haptics.tap();
+    onBookmark(item.id);
+  };
+
+  const handleShareClick = () => {
+    haptics.tap();
+    onShare(item);
+  };
+
+  const handleInfoClick = () => {
+    haptics.tap();
+    setShowDetails(true);
   };
 
   return (
@@ -73,7 +115,16 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
     >
       {/* Media Content */}
       <div className="absolute inset-0">
-        {item.type === 'video' ? (
+        {item.type === 'pdf' ? (
+          <PDFStackView
+            pdfUrl={item.mediaUrl}
+            title={item.eventTitle || 'Event Brochure'}
+            pageCount={item.pageCount || 1}
+            coverImage={item.coverImage}
+            isActive={isActive}
+            onEngagement={(time) => onEngagement(item.id, time)}
+          />
+        ) : item.type === 'video' && hasBeenInViewport ? (
           <video
             src={item.mediaUrl}
             className="w-full h-full object-cover"
@@ -83,25 +134,19 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
             playsInline
           />
         ) : (
-          <>
-            {item.type === 'image' && hasBeenInViewport && (
-              <>
-                {!imageLoaded && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 skeleton-loader" />
-                )}
-                <img
-                  src={getOptimizedUrl(item.mediaUrl)}
-                  alt={item.eventTitle}
-                  className={`w-full h-full object-cover transition-opacity duration-500 ${
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onLoad={() => setImageLoaded(true)}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </>
-            )}
-          </>
+          hasBeenInViewport && (
+            <ProgressiveImage
+              src={item.mediaUrl}
+              alt={item.eventTitle || 'Event media'}
+              className="w-full h-full object-cover"
+              onLoad={() => setImageLoaded(true)}
+            />
+          )
+        )}
+        
+        {/* Loading state if not in viewport */}
+        {!hasBeenInViewport && (
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 skeleton-loader" />
         )}
       </div>
 
@@ -115,8 +160,8 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
         animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
       >
-        <div className={`${getCategoryStyle(item.category)} px-4 py-2 rounded-full flex items-center space-x-2`}>
-          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+        <div className={`${getCategoryStyle(item.category)} px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg`}>
+          <span className="text-lg">{getCategoryEmoji(item.category)}</span>
           <span className="text-white text-xs font-semibold tracking-wide uppercase">
             {item.category.replace('-', ' ')}
           </span>
@@ -134,24 +179,20 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
         <motion.button
           className="glass-surface-elevated w-14 h-14 rounded-2xl flex items-center justify-center group"
           whileTap={{ scale: 0.85 }}
-          onClick={() => {
-            haptics.tap();
-            onBookmark(item.id);
-          }}
+          onClick={handleBookmarkClick}
         >
-          <motion.svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill={item.isBookmarked ? "currentColor" : "none"}
-            stroke="currentColor"
-            strokeWidth="2"
-            className={`transition-colors ${
-              item.isBookmarked ? 'text-red-500' : 'text-white'
-            }`}
+          <motion.div
+            animate={item.isBookmarked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </motion.svg>
+            <Heart
+              size={24}
+              className={`transition-colors ${
+                item.isBookmarked ? 'text-red-500 fill-current' : 'text-white'
+              }`}
+            />
+          </motion.div>
+          
           {item.isBookmarked && (
             <motion.div
               className="absolute inset-0 rounded-2xl"
@@ -169,10 +210,20 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
         <motion.button
           className="glass-surface-elevated w-14 h-14 rounded-2xl flex items-center justify-center"
           whileTap={{ scale: 0.85 }}
-          onClick={() => onShare(item)}
+          onClick={handleShareClick}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-            <path d="M4 12v6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-6M10 2v12M10 2L6 6M10 2l4 4" />
+          <Share2 size={20} className="text-white" />
+        </motion.button>
+
+        {/* Info Button */}
+        <motion.button
+          className="glass-surface-elevated w-14 h-14 rounded-2xl flex items-center justify-center"
+          whileTap={{ scale: 0.85 }}
+          onClick={handleInfoClick}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white">
+            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2"/>
+            <path d="M10 14V9M10 6V6.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </motion.button>
 
@@ -186,7 +237,7 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
 
       {/* Event Info - Bottom */}
       <AnimatePresence>
-        {showInfo && (
+        {showInfo && item.eventTitle && (
           <motion.div
             className="absolute bottom-6 left-5 right-5 z-10"
             initial={{ y: 60, opacity: 0 }}
@@ -201,20 +252,18 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
                 <h2 className="text-heading-2 text-white mb-1">
                   {item.eventTitle}
                 </h2>
-                <p className="text-body-sm text-white/80 flex items-center">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" className="mr-2">
-                    <rect x="2" y="3" width="10" height="9" rx="1" />
-                    <path d="M2 6h10M5 1v2M9 1v2" />
-                  </svg>
-                  {formatDate(item.eventDate)}
+                <p className="text-body-sm text-white/80 flex items-center flex-wrap gap-2">
+                  <span className="flex items-center">
+                    <Calendar size={14} className="mr-1.5" />
+                    {formatDate(item.eventDate)}
+                  </span>
                   {item.location && (
                     <>
-                      <span className="mx-2 text-white/40">•</span>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" className="mr-1">
-                        <path d="M7 7.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" />
-                        <path d="M7 1a5 5 0 0 0-5 5c0 4 5 7 5 7s5-3 5-7a5 5 0 0 0-5-5z" />
-                      </svg>
-                      {item.location}
+                      <span className="text-white/40">•</span>
+                      <span className="flex items-center">
+                        <MapPin size={14} className="mr-1.5" />
+                        {item.location}
+                      </span>
                     </>
                   )}
                 </p>
@@ -230,7 +279,7 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
               {/* Tags */}
               {item.tags && item.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {item.tags.slice(0, 3).map((tag, index) => (
+                  {item.tags.slice(0, 3).map((tag: string, index: number) => (
                     <span
                       key={index}
                       className="glass-button px-3 py-1 text-xs text-white/80"
@@ -259,13 +308,134 @@ const PremiumFeedItem = ({ item, isActive, onBookmark, onShare, onEngagement }) 
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Detailed Info Modal */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDetails(false)}
+          >
+            <motion.div
+              className="glass-surface-elevated w-full max-h-[70vh] rounded-t-3xl overflow-hidden"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 space-y-4 overflow-y-auto">
+                <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-4" />
+                
+                <h2 className="text-heading-1 text-white mb-2">
+                  {item.eventTitle}
+                </h2>
+                
+                {item.description && (
+                  <p className="text-body text-white/80 leading-relaxed">
+                    {item.description}
+                  </p>
+                )}
+                
+                <div className="space-y-3">
+                  <div className="flex items-center text-white/80">
+                    <Calendar size={20} className="mr-3 text-white/60" />
+                    <div>
+                      <p className="text-body font-medium">{formatDate(item.eventDate)}</p>
+                      <p className="text-caption text-white/60">
+                        {new Date(item.eventDate).toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {item.location && (
+                    <div className="flex items-center text-white/80">
+                      <MapPin size={20} className="mr-3 text-white/60" />
+                      <div>
+                        <p className="text-body font-medium">{item.location}</p>
+                        <p className="text-caption text-white/60">Venue</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {item.organizer && (
+                    <div className="flex items-center text-white/80">
+                      <Users size={20} className="mr-3 text-white/60" />
+                      <div>
+                        <p className="text-body font-medium">{item.organizer}</p>
+                        <p className="text-caption text-white/60">Organizer</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {item.tags && item.tags.length > 0 && (
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-caption text-white/60 mb-3">Tags</p>
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map((tag: string, index: number) => (
+                        <span
+                          key={index}
+                          className="glass-button px-3 py-1 text-sm text-white/80"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      haptics.tap();
+                      handleBookmarkClick();
+                    }}
+                    className={`flex-1 py-3 rounded-2xl font-medium transition-all ${
+                      item.isBookmarked
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        : 'glass-button text-white'
+                    }`}
+                  >
+                    {item.isBookmarked ? 'Remove from Saved' : 'Save Event'}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      haptics.tap();
+                      handleShareClick();
+                      setShowDetails(false);
+                    }}
+                    className="flex-1 btn-premium py-3"
+                  >
+                    Share Event
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
 
 // Main VerticalFeed Component
-const PremiumVerticalFeed = ({ items, isLoading }) => {
-  const containerRef = useRef(null);
+interface PremiumVerticalFeedProps {
+  items: any[];
+}
+
+const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
+  const { toggleBookmark, updateEngagement, refreshFeed, isLoading } = useStore();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -273,10 +443,7 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
   const pullOpacity = useTransform(pullDistance, [0, 100], [0, 1]);
   const pullScale = useTransform(pullDistance, [0, 100], [0.8, 1]);
 
-  // Use store functions
-  const { toggleBookmark, updateEngagement, refreshFeed } = useStore();
-
-  const handleShare = async (item) => {
+  const handleShare = useCallback(async (item: any) => {
     if (navigator.share) {
       try {
         await navigator.share({
@@ -284,25 +451,24 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
           text: item.description || 'Amazing event happening soon!',
           url: window.location.href
         });
+        haptics.success();
       } catch (error) {
         console.log('Share cancelled');
       }
     } else {
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(window.location.href);
-        alert('Link copied to clipboard!');
-      } else {
-        alert('Sharing not supported');
+        haptics.success();
       }
     }
-  };
+  }, []);
 
-  // Refresh feed function
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
+    haptics.tap();
     await refreshFeed();
     setIsRefreshing(false);
-  };
+  }, [refreshFeed]);
 
   // Handle online/offline
   useEffect(() => {
@@ -342,14 +508,14 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
     let startY = 0;
     let isDragging = false;
 
-    const handleTouchStart = (e) => {
+    const handleTouchStart = (e: TouchEvent) => {
       if (container.scrollTop === 0) {
         startY = e.touches[0].clientY;
         isDragging = true;
       }
     };
 
-    const handleTouchMove = (e) => {
+    const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging || container.scrollTop > 0) return;
 
       const currentY = e.touches[0].clientY;
@@ -380,10 +546,12 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
     };
   }, [pullDistance, handleRefresh]);
 
-  if (isLoading) {
+  // Loading state
+  if (isLoading && items.length === 0) {
     return <FeedSkeleton />;
   }
 
+  // Empty state
   if (items.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center bg-surface-primary">
@@ -392,9 +560,13 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+          <motion.div
+            className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+          >
             <RefreshCw size={32} className="text-white" />
-          </div>
+          </motion.div>
           <h2 className="text-heading-2 text-primary mb-2">No events found</h2>
           <p className="text-body text-secondary">Pull down to refresh</p>
         </motion.div>
@@ -472,13 +644,16 @@ const PremiumVerticalFeed = ({ items, isLoading }) => {
         <div className="glass-surface-elevated px-4 py-2 rounded-full flex items-center space-x-3">
           <div className="flex space-x-1">
             {[...Array(Math.min(items.length, 5))].map((_, i) => (
-              <div
+              <motion.div
                 key={i}
                 className={`h-1 rounded-full transition-all duration-300 ${
                   i === currentIndex % 5
                     ? 'w-6 bg-primary-500'
                     : 'w-1 bg-white/30'
                 }`}
+                animate={{
+                  scale: i === currentIndex % 5 ? 1.2 : 1
+                }}
               />
             ))}
           </div>

@@ -1,6 +1,6 @@
 export interface MediaItem {
   id: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'pdf'; // Add 'pdf' type
   mediaUrl: string;
   thumbnailUrl?: string;
   category: 'technical' | 'cultural' | 'guest-talks' | 'inter-college' | 'inter-department' | 'sports';
@@ -8,6 +8,8 @@ export interface MediaItem {
   eventTitle?: string;
   description?: string;
   duration?: number; // for videos in seconds
+  pageCount?: number; // for PDFs
+  coverImage?: string; // for PDF cover
   aspectRatio: string;
   isBookmarked: boolean;
   viewCount: number;

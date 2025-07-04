@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, 
-  Calendar, 
-  Heart, 
-  Settings, 
-  LogOut, 
-  Bell,
-  Moon,
-  Sun,
-  Volume2,
-  VolumeX,
-  Smartphone,
-  Share2,
-  Award
+  User, Settings, LogOut, Bell, Moon, Sun,
+  Volume2, VolumeX, Share2, Award, ChevronRight,
+  Heart, Calendar, Eye
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import GlassCard from '../components/ui/GlassCard';
+import { pageVariants, fadeInUp, scaleIn, staggerChildren } from '../utils/animations';
+import { haptics } from '../utils/hapticFeedback';
 
-// Add these props:
 interface ProfileProps {
   onToggleTheme?: () => void;
   currentTheme?: string;
@@ -27,24 +17,31 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light' }) => {
   const { user, mediaItems } = useStore();
   const [showSettings, setShowSettings] = useState(false);
-  const [darkMode, setDarkMode] = useState(currentTheme === 'dark');
   const [notifications, setNotifications] = useState(user.preferences.notifications);
   const [autoplay, setAutoplay] = useState(user.preferences.autoplay);
   
   const savedEventsCount = mediaItems.filter(item => item.isBookmarked).length;
+  const totalViews = mediaItems.reduce((sum, item) => sum + item.viewCount, 0);
   const userEventsCount = mediaItems.filter(item => 
     item.uploadedAt && Date.now() - item.uploadedAt < 86400000 * 7
   ).length;
-  const totalViews = mediaItems.reduce((sum, item) => sum + item.viewCount, 0);
+
+  const stats = [
+    { icon: Heart, label: 'Saved', value: savedEventsCount, color: 'from-red-500 to-pink-600' },
+    { icon: Calendar, label: 'Created', value: userEventsCount, color: 'from-blue-500 to-cyan-600' },
+    { icon: Eye, label: 'Views', value: totalViews > 999 ? `${(totalViews/1000).toFixed(1)}K` : totalViews, color: 'from-purple-500 to-indigo-600' }
+  ];
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to logout? This will clear all your data.')) {
+    haptics.warning();
+    if (confirm('Are you sure you want to logout?')) {
       localStorage.clear();
       window.location.reload();
     }
   };
 
   const handleShare = async () => {
+    haptics.tap();
     if (navigator.share) {
       try {
         await navigator.share({
@@ -58,131 +55,125 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
     }
   };
 
-  // Sync darkMode state with currentTheme prop
-  React.useEffect(() => {
-    setDarkMode(currentTheme === 'dark');
-  }, [currentTheme]);
-
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-12 pb-24"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-surface-primary pt-12 pb-24"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
     >
       {/* Profile Header */}
       <motion.div
-        className="px-4 mb-8"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        className="px-5 mb-8"
+        variants={fadeInUp}
       >
-        <GlassCard className="p-6 text-center">
-          <motion.div
-            className="relative inline-block mb-4"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <div className="w-20 h-20 rounded-full overflow-hidden mx-auto bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                <div className="w-full h-full bg-white/10 rounded-full flex items-center justify-center">
-                  <User size={32} className="text-white" />
-                </div>
-              )}
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full" />
-            </div>
+        <div className="card-premium p-6">
+          <motion.div className="text-center">
+            {/* Avatar */}
+            <motion.div
+              className="relative inline-block mb-4"
+              variants={scaleIn}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto bg-gradient-to-br from-primary-500 to-primary-700 p-0.5">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-surface-elevated rounded-full flex items-center justify-center">
+                    <User size={36} className="text-primary" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Online Indicator */}
+              <motion.div 
+                className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-3 border-surface-primary"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: 'spring' }}
+              />
+            </motion.div>
+            
+            <h1 className="text-heading-1 text-primary mb-1">{user.name}</h1>
+            <p className="text-body text-secondary mb-6">{user.email}</p>
+            
+            {/* Stats */}
+            <motion.div 
+              className="grid grid-cols-3 gap-4"
+              variants={staggerChildren}
+              initial="initial"
+              animate="animate"
+            >
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  className="text-center"
+                  variants={{
+                    initial: { opacity: 0, y: 20 },
+                    animate: { 
+                      opacity: 1, 
+                      y: 0,
+                      transition: { delay: 0.3 + index * 0.1 }
+                    }
+                  }}
+                >
+                  <motion.div
+                    className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mx-auto mb-2`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <stat.icon size={20} className="text-white" />
+                  </motion.div>
+                  <p className="text-heading-3 text-primary font-bold">{stat.value}</p>
+                  <p className="text-caption text-tertiary">{stat.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
-          
-          <h1 className="text-2xl font-bold text-white mb-1">{user.name}</h1>
-          <p className="text-white/70 text-sm mb-4">{user.email}</p>
-          
-          <div className="flex justify-center space-x-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{savedEventsCount}</p>
-              <p className="text-white/70 text-xs">Saved</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{userEventsCount}</p>
-              <p className="text-white/70 text-xs">Shared</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{totalViews > 1000 ? `${(totalViews/1000).toFixed(1)}K` : totalViews}</p>
-              <p className="text-white/70 text-xs">Views</p>
-            </div>
-          </div>
-        </GlassCard>
-      </motion.div>
-
-      {/* Quick Stats */}
-      <motion.div
-        className="px-4 mb-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="grid grid-cols-3 gap-4">
-          <GlassCard className="p-4 text-center">
-            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Heart size={20} className="text-red-400" />
-            </div>
-            <p className="text-white font-bold text-lg">{savedEventsCount}</p>
-            <p className="text-white/70 text-xs">Favorites</p>
-          </GlassCard>
-          
-          <GlassCard className="p-4 text-center">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Calendar size={20} className="text-blue-400" />
-            </div>
-            <p className="text-white font-bold text-lg">{userEventsCount}</p>
-            <p className="text-white/70 text-xs">Created</p>
-          </GlassCard>
-          
-          <GlassCard className="p-4 text-center">
-            <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Award size={20} className="text-yellow-400" />
-            </div>
-            <p className="text-white font-bold text-lg">{Math.floor(totalViews / 100)}</p>
-            <p className="text-white/70 text-xs">Points</p>
-          </GlassCard>
         </div>
       </motion.div>
 
       {/* Menu Items */}
       <motion.div
-        className="px-4 space-y-4"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
+        className="px-5 space-y-4"
+        variants={staggerChildren}
+        initial="initial"
+        animate="animate"
       >
         {/* Settings */}
-        <GlassCard className="overflow-hidden">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="w-full flex items-center px-4 py-4 hover:bg-white/10 transition-colors"
+        <motion.div
+          className="card-premium overflow-hidden"
+          variants={{
+            initial: { opacity: 0, x: -20 },
+            animate: { opacity: 1, x: 0 }
+          }}
+        >
+          <motion.button
+            onClick={() => {
+              haptics.tap();
+              setShowSettings(!showSettings);
+            }}
+            className="w-full flex items-center px-5 py-4 hover:bg-surface-secondary transition-colors"
           >
-            <div className="w-10 h-10 bg-gray-500/20 rounded-full flex items-center justify-center mr-3">
-              <Settings size={18} className="text-gray-300" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mr-4">
+              <Settings size={20} className="text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium text-white">Settings</p>
-              <p className="text-sm text-white/70">App preferences & controls</p>
+              <p className="text-body font-semibold text-primary">Settings</p>
+              <p className="text-caption text-secondary">Preferences & controls</p>
             </div>
             <motion.div
-              animate={{ rotate: showSettings ? 180 : 0 }}
+              animate={{ rotate: showSettings ? 90 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Settings size={16} className="text-white/50" />
+              <ChevronRight size={20} className="text-tertiary" />
             </motion.div>
-          </button>
+          </motion.button>
 
           <AnimatePresence>
             {showSettings && (
@@ -191,19 +182,49 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-t border-white/10"
+                className="border-t border-border-primary"
               >
-                <div className="p-4 space-y-4">
+                <div className="p-5 space-y-4">
+                  {/* Theme Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {currentTheme === 'dark' ? (
+                        <Moon size={18} className="text-tertiary mr-3" />
+                      ) : (
+                        <Sun size={18} className="text-tertiary mr-3" />
+                      )}
+                      <span className="text-body text-primary">Dark Mode</span>
+                    </div>
+                    <motion.button
+                      onClick={() => {
+                        haptics.tap();
+                        onToggleTheme?.();
+                      }}
+                      className={`w-12 h-6 rounded-full transition-colors ${
+                        currentTheme === 'dark' ? 'bg-primary-500' : 'bg-surface-tertiary'
+                      }`}
+                    >
+                      <motion.div
+                        className="w-5 h-5 bg-white rounded-full shadow-lg"
+                        animate={{ x: currentTheme === 'dark' ? 26 : 2 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    </motion.button>
+                  </div>
+
                   {/* Notifications */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <Bell size={16} className="text-white/70 mr-3" />
-                      <span className="text-white text-sm">Notifications</span>
+                      <Bell size={18} className="text-tertiary mr-3" />
+                      <span className="text-body text-primary">Notifications</span>
                     </div>
-                    <button
-                      onClick={() => setNotifications(!notifications)}
+                    <motion.button
+                      onClick={() => {
+                        haptics.tap();
+                        setNotifications(!notifications);
+                      }}
                       className={`w-12 h-6 rounded-full transition-colors ${
-                        notifications ? 'bg-blue-500' : 'bg-white/20'
+                        notifications ? 'bg-primary-500' : 'bg-surface-tertiary'
                       }`}
                     >
                       <motion.div
@@ -211,23 +232,26 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                         animate={{ x: notifications ? 26 : 2 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
-                    </button>
+                    </motion.button>
                   </div>
 
                   {/* Autoplay */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       {autoplay ? (
-                        <Volume2 size={16} className="text-white/70 mr-3" />
+                        <Volume2 size={18} className="text-tertiary mr-3" />
                       ) : (
-                        <VolumeX size={16} className="text-white/70 mr-3" />
+                        <VolumeX size={18} className="text-tertiary mr-3" />
                       )}
-                      <span className="text-white text-sm">Autoplay Videos</span>
+                      <span className="text-body text-primary">Autoplay Videos</span>
                     </div>
-                    <button
-                      onClick={() => setAutoplay(!autoplay)}
+                    <motion.button
+                      onClick={() => {
+                        haptics.tap();
+                        setAutoplay(!autoplay);
+                      }}
                       className={`w-12 h-6 rounded-full transition-colors ${
-                        autoplay ? 'bg-blue-500' : 'bg-white/20'
+                        autoplay ? 'bg-primary-500' : 'bg-surface-tertiary'
                       }`}
                     >
                       <motion.div
@@ -235,86 +259,52 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                         animate={{ x: autoplay ? 26 : 2 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
-                    </button>
-                  </div>
-
-                  {/* Theme Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      {darkMode ? (
-                        <Moon size={16} className="text-white/70 mr-3" />
-                      ) : (
-                        <Sun size={16} className="text-white/70 mr-3" />
-                      )}
-                      <span className="text-white text-sm">Dark Mode</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setDarkMode(!darkMode);
-                        if (onToggleTheme) onToggleTheme();
-                      }}
-                      className={`w-12 h-6 rounded-full transition-colors ${
-                        darkMode ? 'bg-blue-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <motion.div
-                        className="w-5 h-5 bg-white rounded-full shadow-lg"
-                        animate={{ x: darkMode ? 26 : 2 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </GlassCard>
+        </motion.div>
 
         {/* Share App */}
-        <GlassCard>
-          <button
-            onClick={handleShare}
-            className="w-full flex items-center px-4 py-4 hover:bg-white/10 transition-colors"
-          >
-            <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center mr-3">
-              <Share2 size={18} className="text-blue-400" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-white">Share App</p>
-              <p className="text-sm text-white/70">Tell your friends about us!</p>
-            </div>
-          </button>
-        </GlassCard>
+        <motion.button
+          onClick={handleShare}
+          className="card-premium w-full flex items-center px-5 py-4 hover:bg-surface-secondary transition-colors"
+          variants={{
+            initial: { opacity: 0, x: -20 },
+            animate: { opacity: 1, x: 0 }
+          }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-4">
+            <Share2 size={20} className="text-white" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-body font-semibold text-primary">Share App</p>
+            <p className="text-caption text-secondary">Tell your friends!</p>
+          </div>
+          <ChevronRight size={20} className="text-tertiary" />
+        </motion.button>
 
         {/* Logout */}
-        <GlassCard>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center px-4 py-4 hover:bg-red-500/10 transition-colors"
-          >
-            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mr-3">
-              <LogOut size={18} className="text-red-400" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-red-400">Logout</p>
-              <p className="text-sm text-red-400/70">Sign out of your account</p>
-            </div>
-          </button>
-        </GlassCard>
-
-        {/* App Info */}
-        <GlassCard className="p-4">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-3 flex items-center justify-center">
-              <Smartphone size={24} className="text-white" />
-            </div>
-            <h3 className="font-bold text-white mb-1">College Events</h3>
-            <p className="text-sm text-white/70 mb-2">Version 2.0.0</p>
-            <p className="text-xs text-white/50 leading-relaxed">
-              Discover amazing events happening around your campus with style ✨
-            </p>
+        <motion.button
+          onClick={handleLogout}
+          className="card-premium w-full flex items-center px-5 py-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+          variants={{
+            initial: { opacity: 0, x: -20 },
+            animate: { opacity: 1, x: 0 }
+          }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mr-4">
+            <LogOut size={20} className="text-white" />
           </div>
-        </GlassCard>
+          <div className="flex-1 text-left">
+            <p className="text-body font-semibold text-error">Logout</p>
+            <p className="text-caption text-error/70">Sign out of your account</p>
+          </div>
+        </motion.button>
       </motion.div>
     </motion.div>
   );

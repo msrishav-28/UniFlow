@@ -556,3 +556,30 @@ body {
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* PDF Stack Styles */
+.pdf-stack-shadow {
+  box-shadow: 
+    0 1px 3px rgba(0,0,0,0.12),
+    0 1px 2px rgba(0,0,0,0.24),
+    0 -1px 0 rgba(255,255,255,0.1) inset;
+}
+
+.pdf-page-edge {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0,0,0,0.02) 1%,
+    rgba(0,0,0,0.04) 2%,
+    rgba(0,0,0,0.02) 3%,
+    transparent 4%
+  );
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .pdf-stack-shadow {
+  box-shadow: 
+    0 1px 3px rgba(0,0,0,0.3),
+    0 1px 2px rgba(0,0,0,0.5),
+    0 -1px 0 rgba(255,255,255,0.05)
+}

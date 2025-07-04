@@ -11,7 +11,6 @@ const Home: React.FC = () => {
     cleanupOldItems();
   }, [cleanupOldItems]);
 
-  // Enhanced algorithm for better content
   const sortedItems = [...mediaItems].sort((a, b) => {
     const aScore = (a.viewCount * 0.3) + (a.engagementTime * 0.7) + (a.isBookmarked ? 100 : 0);
     const bScore = (b.viewCount * 0.3) + (b.engagementTime * 0.7) + (b.isBookmarked ? 100 : 0);

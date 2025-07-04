@@ -8,6 +8,7 @@ import PremiumAddPage from './pages/PremiumAddPage';
 import Saved from './pages/Saved';
 import Profile from './pages/Profile';
 import { useStore } from './store/useStore';
+import { FeedbackWidget } from './components/feedback/FeedbackWidget'; // <-- Added import
 
 // Navigation wrapper component
 function NavigationWrapper() {
@@ -81,6 +82,9 @@ function App() {
             <PremiumAddPage onClose={() => setShowAddPage(false)} />
           )}
         </AnimatePresence>
+
+        {/* Feedback Widget */}
+        <FeedbackWidget /> {/* <-- Add this line */}
       </div>
     </Router>
   );
