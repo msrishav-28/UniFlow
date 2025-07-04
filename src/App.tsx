@@ -8,7 +8,8 @@ import PremiumAddPage from './pages/PremiumAddPage';
 import Saved from './pages/Saved';
 import Profile from './pages/Profile';
 import { useStore } from './store/useStore';
-import { FeedbackWidget } from './components/feedback/FeedbackWidget'; // <-- Added import
+import { FeedbackWidget } from './components/feedback/FeedbackWidget';
+import { analyticsService } from './services/analyticsService';
 
 // Navigation wrapper component
 function NavigationWrapper() {
@@ -37,6 +38,15 @@ function App() {
 
     // Remove old dark mode class
     document.documentElement.classList.remove('dark');
+
+    // Track initial page view
+    analyticsService.trackPageView('home');
+    
+    // Track app launch
+    analyticsService.trackEvent('app_launch', {
+      version: '1.0.0',
+      platform: 'pwa'
+    });
   }, [cleanupOldItems]);
 
   const toggleTheme = () => {
