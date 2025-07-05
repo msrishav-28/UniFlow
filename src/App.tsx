@@ -39,8 +39,8 @@ const AppLoader = () => (
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
       />
-      <h2 className="text-heading-2 text-primary">CampusVibe</h2>
-      <p className="text-body text-secondary mt-2">Loading amazing events...</p>
+      <h2 className="text-heading-2 text-primary">UniFlow</h2>
+      <p className="text-body text-secondary mt-2">Events in Motion</p>
     </motion.div>
   </div>
 );

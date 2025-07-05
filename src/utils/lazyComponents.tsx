@@ -33,25 +33,21 @@ export const withSuspense = <T extends ComponentType<any>>(
 };
 
 // Lazy load heavy components
-export const LazyPDFViewer = lazy(() => 
-  import('../components/ui/PDFStackView').then(module => ({ 
-    default: module.PDFStackView 
-  }))
-);
-
 export const LazyVideoPromotion = lazy(() => 
   import('../components/features/VideoPromotion').then(module => ({ 
     default: module.VideoPromotion 
   }))
 );
 
-export const LazyAnalyticsPage = lazy(() => 
-  import('../pages/Analytics')
-);
-
 export const LazyFeedbackWidget = lazy(() => 
   import('../components/feedback/FeedbackWidget').then(module => ({ 
     default: module.FeedbackWidget 
+  }))
+);
+
+export const LazyPDFViewer = lazy(() => 
+  import('../components/ui/PDFStackView').then(module => ({ 
+    default: module.PDFStackView 
   }))
 );
 

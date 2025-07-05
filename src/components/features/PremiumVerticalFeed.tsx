@@ -6,6 +6,7 @@ import { useViewportLoader } from '../../hooks/useViewportLoader';
 import { haptics } from '../../utils/hapticFeedback';
 import { FeedSkeleton } from '../ui/Skeleton';
 import { ProgressiveImage } from '../ui/ProgressiveImage';
+import { LazyPDFViewer } from '../../utils/lazyComponents';
 
 // PDF Loading Skeleton
 const PDFSkeleton = () => (
@@ -17,49 +18,6 @@ const PDFSkeleton = () => (
     />
   </div>
 );
-
-// Simple PDF Viewer Component
-const SimplePDFViewer: React.FC<{
-  pdfUrl: string;
-  title: string;
-  isActive: boolean;
-  onEngagement: (time: number) => void;
-}> = ({ pdfUrl, title, isActive, onEngagement }) => {
-  const startTimeRef = useRef<number>(Date.now());
-
-  useEffect(() => {
-    if (isActive) {
-      startTimeRef.current = Date.now();
-    } else if (startTimeRef.current) {
-      const timeSpent = (Date.now() - startTimeRef.current) / 1000;
-      onEngagement(timeSpent);
-    }
-  }, [isActive, onEngagement]);
-
-  return (
-    <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center">
-      <div className="text-center text-white p-8">
-        <div className="w-16 h-16 mx-auto mb-4 bg-primary-500 rounded-2xl flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14,2 14,8 20,8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10,9 9,9 8,9"/>
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-sm text-white/60 mb-4">PDF Document</p>
-        <button 
-          onClick={() => window.open(pdfUrl, '_blank')}
-          className="glass-button px-6 py-2 text-sm"
-        >
-          View PDF
-        </button>
-      </div>
-    </div>
-  );
-};
 
 // Premium FeedItem Component
 interface FeedItemProps {
@@ -168,9 +126,11 @@ const PremiumFeedItem = memo<FeedItemProps>(({
       <div className="absolute inset-0">
         {item.type === 'pdf' ? (
           <Suspense fallback={<PDFSkeleton />}>
-            <SimplePDFViewer
+            <LazyPDFViewer
               pdfUrl={item.mediaUrl}
               title={item.eventTitle || 'Event Brochure'}
+              pageCount={item.pageCount || 1}
+              coverImage={item.coverImage}
               isActive={isActive}
               onEngagement={(time: number) => onEngagement(item.id, time)}
             />

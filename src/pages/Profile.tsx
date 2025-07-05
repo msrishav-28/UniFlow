@@ -55,8 +55,8 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'College Events App',
-          text: 'Check out this amazing college events app!',
+          title: 'UniFlow - Events in Motion',
+          text: 'Check out UniFlow for amazing college events!',
           url: window.location.origin
         });
       } catch (error) {

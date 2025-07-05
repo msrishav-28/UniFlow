@@ -1,22 +1,31 @@
 {
-  "name": "college-events-pwa",
+  "name": "uniflow-app",
   "private": true,
   "version": "1.0.0",
+  "description": "UniFlow - Events in Motion. A modern college events social app",
   "type": "module",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
-    "analytics:dashboard": "vite --port 3001 --open /analytics",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "clean": "rm -rf node_modules dist .vite",
+    "reinstall": "npm run clean && npm install",
+    "analytics:dashboard": "vite --port 3001 --open /analytics",
+    "firebase:emulators": "firebase emulators:start",
+    "setup": "node -e \"console.log('Run setup.bat on Windows or ./setup.sh on Linux/macOS')\""
   },
   "dependencies": {
+    "@types/react-pdf": "^7.0.0",
     "@vercel/analytics": "^1.1.1",
     "@vercel/speed-insights": "^1.0.2",
     "dexie": "^3.2.4",

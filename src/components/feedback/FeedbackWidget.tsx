@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
-import { supabase } from '../../services/supabase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../services/firebase';
 import { haptics } from '../../utils/hapticFeedback';
 import { analyticsService } from '../../services/analyticsService';
 
@@ -61,8 +62,8 @@ export const FeedbackWidget: React.FC = () => {
         theme: document.documentElement.getAttribute('data-theme'),
       };
 
-      // Submit feedback
-      const { error } = await supabase.from('feedback_reports').insert({
+      // Submit feedback to Firebase
+      await addDoc(collection(db, 'feedback_reports'), {
         type,
         title,
         description,
@@ -76,9 +77,8 @@ export const FeedbackWidget: React.FC = () => {
         },
         app_state: appState,
         user_id: localStorage.getItem('analytics_user_id'),
+        created_at: serverTimestamp(),
       });
-
-      if (error) throw error;
 
       // Track the feedback submission
       // Track feedback submission
