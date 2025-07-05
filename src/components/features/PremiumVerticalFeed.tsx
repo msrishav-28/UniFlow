@@ -1,13 +1,65 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, memo, Suspense } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { RefreshCw, Wifi, WifiOff, Heart, Share2, Calendar, MapPin, Tag, Users } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, Heart, Share2, Calendar, MapPin, Users } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useViewportLoader } from '../../hooks/useViewportLoader';
-import { getOptimizedUrl } from '../../utils/imageOptimizer';
 import { haptics } from '../../utils/hapticFeedback';
 import { FeedSkeleton } from '../ui/Skeleton';
 import { ProgressiveImage } from '../ui/ProgressiveImage';
-import { PDFStackView } from '../ui/PDFStackView';
+
+// PDF Loading Skeleton
+const PDFSkeleton = () => (
+  <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900 skeleton-loader flex items-center justify-center">
+    <motion.div
+      className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full"
+      animate={{ rotate: 360 }}
+      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+    />
+  </div>
+);
+
+// Simple PDF Viewer Component
+const SimplePDFViewer: React.FC<{
+  pdfUrl: string;
+  title: string;
+  isActive: boolean;
+  onEngagement: (time: number) => void;
+}> = ({ pdfUrl, title, isActive, onEngagement }) => {
+  const startTimeRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (isActive) {
+      startTimeRef.current = Date.now();
+    } else if (startTimeRef.current) {
+      const timeSpent = (Date.now() - startTimeRef.current) / 1000;
+      onEngagement(timeSpent);
+    }
+  }, [isActive, onEngagement]);
+
+  return (
+    <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center">
+      <div className="text-center text-white p-8">
+        <div className="w-16 h-16 mx-auto mb-4 bg-primary-500 rounded-2xl flex items-center justify-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold mb-2">{title}</h3>
+        <p className="text-sm text-white/60 mb-4">PDF Document</p>
+        <button 
+          onClick={() => window.open(pdfUrl, '_blank')}
+          className="glass-button px-6 py-2 text-sm"
+        >
+          View PDF
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Premium FeedItem Component
 interface FeedItemProps {
@@ -18,7 +70,7 @@ interface FeedItemProps {
   onEngagement: (id: string, time: number) => void;
 }
 
-const PremiumFeedItem: React.FC<FeedItemProps> = ({ 
+const PremiumFeedItem = memo<FeedItemProps>(({ 
   item, 
   isActive, 
   onBookmark, 
@@ -31,7 +83,6 @@ const PremiumFeedItem: React.FC<FeedItemProps> = ({
   });
   
   const [showInfo, setShowInfo] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const startTimeRef = useRef<number>(Date.now());
   
@@ -116,14 +167,14 @@ const PremiumFeedItem: React.FC<FeedItemProps> = ({
       {/* Media Content */}
       <div className="absolute inset-0">
         {item.type === 'pdf' ? (
-          <PDFStackView
-            pdfUrl={item.mediaUrl}
-            title={item.eventTitle || 'Event Brochure'}
-            pageCount={item.pageCount || 1}
-            coverImage={item.coverImage}
-            isActive={isActive}
-            onEngagement={(time) => onEngagement(item.id, time)}
-          />
+          <Suspense fallback={<PDFSkeleton />}>
+            <SimplePDFViewer
+              pdfUrl={item.mediaUrl}
+              title={item.eventTitle || 'Event Brochure'}
+              isActive={isActive}
+              onEngagement={(time: number) => onEngagement(item.id, time)}
+            />
+          </Suspense>
         ) : item.type === 'video' && hasBeenInViewport ? (
           <video
             src={item.mediaUrl}
@@ -139,7 +190,6 @@ const PremiumFeedItem: React.FC<FeedItemProps> = ({
               src={item.mediaUrl}
               alt={item.eventTitle || 'Event media'}
               className="w-full h-full object-cover"
-              onLoad={() => setImageLoaded(true)}
             />
           )
         )}
@@ -426,7 +476,14 @@ const PremiumFeedItem: React.FC<FeedItemProps> = ({
       </AnimatePresence>
     </motion.div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent re-renders
+  return (
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.item.isBookmarked === nextProps.item.isBookmarked
+  );
+});
 
 // Main VerticalFeed Component
 interface PremiumVerticalFeedProps {
@@ -439,6 +496,7 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 3 });
   const pullDistance = useMotionValue(0);
   const pullOpacity = useTransform(pullDistance, [0, 100], [0, 1]);
   const pullScale = useTransform(pullDistance, [0, 100], [0.8, 1]);
@@ -484,7 +542,7 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
     };
   }, []);
 
-  // Handle scroll
+  // Handle scroll with virtualization
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -492,8 +550,15 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
       const windowHeight = window.innerHeight;
-      const index = Math.round(scrollTop / windowHeight);
-      setCurrentIndex(Math.min(Math.max(index, 0), items.length - 1));
+      const currentIndex = Math.round(scrollTop / windowHeight);
+      
+      // Update visible range with buffer
+      setVisibleRange({
+        start: Math.max(0, currentIndex - 1),
+        end: Math.min(items.length - 1, currentIndex + 2)
+      });
+      
+      setCurrentIndex(Math.min(Math.max(currentIndex, 0), items.length - 1));
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
@@ -622,16 +687,23 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
         ref={containerRef}
         className="h-full overflow-y-auto smooth-scroll"
       >
-        {items.map((item, index) => (
-          <PremiumFeedItem
-            key={item.id}
-            item={item}
-            isActive={index === currentIndex}
-            onBookmark={toggleBookmark}
-            onShare={handleShare}
-            onEngagement={updateEngagement}
-          />
-        ))}
+        {items.map((item, index) => {
+          // Only render if in visible range
+          if (index < visibleRange.start || index > visibleRange.end) {
+            return <div key={item.id} className="h-screen" />; // Placeholder
+          }
+          
+          return (
+            <PremiumFeedItem
+              key={item.id}
+              item={item}
+              isActive={index === currentIndex}
+              onBookmark={toggleBookmark}
+              onShare={handleShare}
+              onEngagement={updateEngagement}
+            />
+          );
+        })}
       </div>
 
       {/* Progress Indicator */}

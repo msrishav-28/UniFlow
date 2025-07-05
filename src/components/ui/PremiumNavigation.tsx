@@ -1,9 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Grid3x3, Plus, Heart, User } from 'lucide-react';
-import { haptics } from '../../utils/hapticFeedback'; // <-- Add this import
+import { useNavigate, useLocation } from 'react-router-dom';
+import { haptics } from '../../utils/hapticFeedback';
 
-const PremiumNavigation = ({ currentPath = '/', onNavigate }) => {
+const PremiumNavigation = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/categories', icon: Grid3x3, label: 'Browse' },
@@ -16,6 +21,17 @@ const PremiumNavigation = ({ currentPath = '/', onNavigate }) => {
     type: 'spring',
     stiffness: 500,
     damping: 30
+  };
+
+  const handleNavigation = (path: string, isCenter?: boolean) => {
+    if (currentPath !== path) {
+      if (isCenter) {
+        haptics.success();
+      } else {
+        haptics.tap();
+      }
+      navigate(path);
+    }
   };
 
   return (
@@ -39,15 +55,7 @@ const PremiumNavigation = ({ currentPath = '/', onNavigate }) => {
               return (
                 <motion.button
                   key={path}
-                  onClick={() => {
-                    if (isCenter) {
-                      haptics.success();
-                      onNavigate(path);
-                    } else {
-                      haptics.tap();
-                      onNavigate(path);
-                    }
-                  }}
+                  onClick={() => handleNavigation(path, isCenter)}
                   className={`relative flex flex-col items-center justify-center transition-all ${
                     isCenter ? '-mt-8' : ''
                   }`}

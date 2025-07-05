@@ -39,14 +39,16 @@ export interface AppState {
   currentCategory: string;
   isLoading: boolean;
   lastRefresh: number;
+  error: string | null;
   
   // Actions
-  addMediaItem: (item: Omit<MediaItem, 'id' | 'uploadedAt' | 'isBookmarked' | 'viewCount' | 'engagementTime'>) => void;
-  toggleBookmark: (itemId: string) => void;
+  addMediaItem: (item: Omit<MediaItem, 'id' | 'uploadedAt' | 'isBookmarked' | 'viewCount' | 'engagementTime'>) => Promise<void>;
+  toggleBookmark: (itemId: string) => Promise<void>;
   setCategory: (category: string) => void;
-  updateEngagement: (itemId: string, timeSpent: number) => void;
+  updateEngagement: (itemId: string, timeSpent: number) => Promise<void>;
   refreshFeed: () => Promise<void>;
   cleanupOldItems: () => void;
+  initializeFirebaseData: () => Promise<void>;
 }
 
 export interface GestureState {
