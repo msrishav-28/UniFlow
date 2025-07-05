@@ -1,15 +1,40 @@
 import React, { useEffect } from 'react';
-import VerticalFeed from '../components/Feed/VerticalFeed';
+import { motion } from 'framer-motion';
+import PremiumVerticalFeed from '../components/features/PremiumVerticalFeed';
 import { useStore } from '../store/useStore';
+import { pageVariants } from '../utils/animations';
+import { SwipeablePage } from '../components/GestureNavigation';
 
 const Home: React.FC = () => {
-  const { events, cleanupOldEvents } = useStore();
+  const { mediaItems, cleanupOldItems } = useStore();
 
   useEffect(() => {
-    cleanupOldEvents();
-  }, [cleanupOldEvents]);
+    cleanupOldItems();
+  }, [cleanupOldItems]);
 
-  return <VerticalFeed events={events} />;
+  const sortedItems = [...mediaItems].sort((a, b) => {
+    const aScore = (a.viewCount * 0.3) + (a.engagementTime * 0.7) + (a.isBookmarked ? 100 : 0);
+    const bScore = (b.viewCount * 0.3) + (b.engagementTime * 0.7) + (b.isBookmarked ? 100 : 0);
+    
+    if (Math.abs(aScore - bScore) < 10) {
+      return b.uploadedAt - a.uploadedAt;
+    }
+    
+    return bScore - aScore;
+  });
+
+  return (
+    <SwipeablePage>
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        <PremiumVerticalFeed items={sortedItems} />
+      </motion.div>
+    </SwipeablePage>
+  );
 };
 
 export default Home;

@@ -9,11 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'College Events',
+        name: 'College Events - Discover Amazing Events',
         short_name: 'CollegeEvents',
-        description: 'Discover college events through beautiful posters',
-        theme_color: '#3B82F6',
-        background_color: '#0F172A',
+        description: 'Discover college events through beautiful media with modern glassmorphism design',
+        theme_color: '#6366f1',
+        background_color: '#0f0f0f',
         display: 'standalone',
         scope: '/',
         start_url: '/',
@@ -38,7 +38,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,mp4,webm}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/images\.pexels\.com/,
@@ -46,8 +46,19 @@ export default defineConfig({
             options: {
               cacheName: 'pexels-images',
               expiration: {
-                maxEntries: 60,
+                maxEntries: 100,
                 maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/sample-videos\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'sample-videos',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
               }
             }
           }
