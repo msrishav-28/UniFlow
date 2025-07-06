@@ -1,4 +1,4 @@
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -7,40 +7,35 @@ import { useStore } from './store/useStore';
 import { analyticsService } from './services/analyticsService';
 import { EdgeSwipeNavigation } from './components/GestureNavigation';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { 
-  LazyHome,
-  LazyCategories,
-  LazyPremiumAddPage,
-  LazySaved,
-  LazyProfile,
-  LazyFeedbackWidget,
-  withSuspense
-} from './utils/lazyComponents';
 
-// Wrap lazy components
-const Home = withSuspense(LazyHome);
-const Categories = withSuspense(LazyCategories);
-const PremiumAddPage = withSuspense(LazyPremiumAddPage);
-const Saved = withSuspense(LazySaved);
-const Profile = withSuspense(LazyProfile);
-const FeedbackWidget = withSuspense(LazyFeedbackWidget);
+// Lazy load components with proper error boundaries
+const Home = lazy(() => import('./pages/Home'));
+const Categories = lazy(() => import('./pages/Categories'));
+const PremiumAddPage = lazy(() => import('./pages/PremiumAddPage'));
+const Saved = lazy(() => import('./pages/Saved'));
+const Profile = lazy(() => import('./pages/Profile'));
+const FeedbackWidget = lazy(() => 
+  import('./components/feedback/FeedbackWidget').then(module => ({
+    default: module.FeedbackWidget
+  }))
+);
 
-// Loading screen for initial app load
-const AppLoader = () => (
+// Loading screen component
+const PageLoader = () => (
   <div className="h-screen flex items-center justify-center bg-surface-primary">
     <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       className="text-center"
     >
       <motion.div
-        className="w-20 h-20 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
+        className="w-16 h-16 border-3 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
       />
-      <h2 className="text-heading-2 text-primary">UniFlow</h2>
-      <p className="text-body text-secondary mt-2">Events in Motion</p>
+      <h2 className="text-lg font-semibold text-primary">UniFlow</h2>
+      <p className="text-sm text-secondary mt-1">Events in Motion</p>
     </motion.div>
   </div>
 );
@@ -99,7 +94,7 @@ function AppContent() {
   };
 
   if (!appReady) {
-    return <AppLoader />;
+    return <PageLoader />;
   }
 
   return (
@@ -118,20 +113,23 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/add" element={<PremiumAddPage />} />
-          <Route path="/saved" element={<Saved />} />
-          <Route path="/profile" element={
-            <Profile onToggleTheme={toggleTheme} currentTheme={theme} />
-          } />
-        </Routes>
-      </AnimatePresence>
+      <Suspense fallback={<PageLoader />}>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Home />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/add" element={<PremiumAddPage />} />
+            <Route path="/saved" element={<Saved />} />
+            <Route path="/profile" element={
+              <Profile onToggleTheme={toggleTheme} currentTheme={theme} />
+            } />
+          </Routes>
+        </AnimatePresence>
+      </Suspense>
       
       <PremiumNavigation />
       <EdgeSwipeNavigation />
+      
       <Suspense fallback={null}>
         <FeedbackWidget />
       </Suspense>
@@ -144,9 +142,9 @@ function AppContent() {
           style: {
             background: theme === 'dark' ? '#1a1a1a' : '#ffffff',
             color: theme === 'dark' ? '#fafafa' : '#171717',
-            borderRadius: '16px',
-            padding: '16px',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
           },
           success: {
             iconTheme: {

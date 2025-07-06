@@ -7,7 +7,6 @@ import {
   MapPin, Award, TrendingUp
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { pageVariants, fadeInUp, scaleIn, staggerChildren } from '../utils/animations';
 import { haptics } from '../utils/hapticFeedback';
 
 interface ProfileProps {
@@ -31,9 +30,9 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
   const totalEngagement = mediaItems.reduce((sum, item) => sum + item.engagementTime, 0);
 
   const stats = [
-    { icon: Grid3x3, label: 'Posts', value: userEvents.length, color: 'from-blue-500 to-cyan-600' },
-    { icon: Heart, label: 'Saved', value: savedEventsCount, color: 'from-red-500 to-pink-600' },
-    { icon: Eye, label: 'Views', value: totalViews > 999 ? `${(totalViews/1000).toFixed(1)}K` : totalViews, color: 'from-purple-500 to-indigo-600' },
+    { icon: Grid3x3, label: 'Posts', value: userEvents.length, color: 'from-blue-500 to-blue-600' },
+    { icon: Heart, label: 'Saved', value: savedEventsCount, color: 'from-red-500 to-red-600' },
+    { icon: Eye, label: 'Views', value: totalViews > 999 ? `${(totalViews/1000).toFixed(1)}K` : totalViews, color: 'from-purple-500 to-purple-600' },
   ];
 
   const detailedStats = [
@@ -66,29 +65,16 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
   };
 
   return (
-    <motion.div
-      className="min-h-screen bg-surface-primary pb-24"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
+    <div className="min-h-screen bg-surface-primary pb-24">
       {/* Profile Header */}
-      <motion.div
-        className="relative"
-        variants={fadeInUp}
-      >
+      <div className="relative">
         {/* Background Gradient */}
         <div className="absolute inset-0 h-48 bg-gradient-to-br from-primary-500 to-primary-700" />
         
         {/* Profile Content */}
-        <div className="relative px-5 pt-12 pb-6">
+        <div className="relative px-5 pt-16 pb-6">
           {/* Avatar */}
-          <motion.div
-            className="relative inline-block mb-4"
-            variants={scaleIn}
-            transition={{ delay: 0.2 }}
-          >
+          <div className="relative inline-block mb-4">
             <div className="w-24 h-24 rounded-full overflow-hidden mx-auto bg-white p-0.5">
               {user.avatar ? (
                 <img
@@ -108,53 +94,43 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
               className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-white"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.4, type: 'spring' }}
+              transition={{ delay: 0.2, type: 'spring' }}
             />
-          </motion.div>
+          </div>
           
           {/* Name & Info */}
           <div className="text-center mb-6">
-            <h1 className="text-heading-1 text-white mb-1">{user.name}</h1>
-            <div className="flex items-center justify-center text-white/80 text-body-sm">
+            <h1 className="text-2xl font-bold text-white mb-1">{user.name}</h1>
+            <div className="flex items-center justify-center text-white/80 text-sm">
               <MapPin size={14} className="mr-1" />
-              <span>NYC, USA</span>
+              <span>New York, USA</span>
             </div>
           </div>
           
           {/* Stats Cards */}
-          <motion.div 
-            className="grid grid-cols-3 gap-3"
-            variants={staggerChildren}
-            initial="initial"
-            animate="animate"
-          >
+          <div className="grid grid-cols-3 gap-3">
             {stats.map((stat, index) => (
               <motion.div
                 key={stat.label}
                 className="glass-surface-elevated rounded-2xl p-4 text-center"
-                variants={{
-                  initial: { opacity: 0, y: 20 },
-                  animate: { 
-                    opacity: 1, 
-                    y: 0,
-                    transition: { delay: 0.3 + index * 0.1 }
-                  }
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + index * 0.05 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <motion.div
+                <div
                   className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mx-auto mb-2`}
                 >
                   <stat.icon size={18} className="text-white" />
-                </motion.div>
-                <p className="text-heading-3 text-primary font-bold">{stat.value}</p>
-                <p className="text-caption text-tertiary uppercase tracking-wider">{stat.label}</p>
+                </div>
+                <p className="text-lg font-bold text-primary">{stat.value}</p>
+                <p className="text-xs text-tertiary uppercase tracking-wider">{stat.label}</p>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Tabs */}
       <div className="px-5 mb-6">
@@ -273,7 +249,7 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                   </div>
                   <p className="text-body text-primary">{stat.label}</p>
                 </div>
-                <p className="text-heading-3 font-bold text-primary">{stat.value}</p>
+                <p className="text-lg font-bold text-primary">{stat.value}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -281,21 +257,10 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
       </AnimatePresence>
 
       {/* Settings Section */}
-      <motion.div
-        className="px-5 mt-8 space-y-4"
-        variants={staggerChildren}
-        initial="initial"
-        animate="animate"
-      >
+      <div className="px-5 mt-8 space-y-4">
         {/* Settings */}
-        <motion.div
-          className="card-premium overflow-hidden"
-          variants={{
-            initial: { opacity: 0, x: -20 },
-            animate: { opacity: 1, x: 0 }
-          }}
-        >
-          <motion.button
+        <div className="card-premium overflow-hidden">
+          <button
             onClick={() => {
               haptics.tap();
               setShowSettings(!showSettings);
@@ -315,7 +280,7 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
             >
               <ChevronRight size={20} className="text-tertiary" />
             </motion.div>
-          </motion.button>
+          </button>
 
           <AnimatePresence>
             {showSettings && (
@@ -337,21 +302,21 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                       )}
                       <span className="text-body text-primary">Dark Mode</span>
                     </div>
-                    <motion.button
+                    <button
                       onClick={() => {
                         haptics.tap();
                         onToggleTheme?.();
                       }}
-                      className={`w-12 h-6 rounded-full transition-colors ${
+                      className={`w-12 h-6 rounded-full transition-colors relative ${
                         currentTheme === 'dark' ? 'bg-primary-500' : 'bg-surface-tertiary'
                       }`}
                     >
                       <motion.div
-                        className="w-5 h-5 bg-white rounded-full shadow-lg"
-                        animate={{ x: currentTheme === 'dark' ? 26 : 2 }}
+                        className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg"
+                        animate={{ left: currentTheme === 'dark' ? '26px' : '2px' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
-                    </motion.button>
+                    </button>
                   </div>
 
                   {/* Notifications */}
@@ -360,21 +325,21 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                       <Bell size={18} className="text-tertiary mr-3" />
                       <span className="text-body text-primary">Notifications</span>
                     </div>
-                    <motion.button
+                    <button
                       onClick={() => {
                         haptics.tap();
                         setNotifications(!notifications);
                       }}
-                      className={`w-12 h-6 rounded-full transition-colors ${
+                      className={`w-12 h-6 rounded-full transition-colors relative ${
                         notifications ? 'bg-primary-500' : 'bg-surface-tertiary'
                       }`}
                     >
                       <motion.div
-                        className="w-5 h-5 bg-white rounded-full shadow-lg"
-                        animate={{ x: notifications ? 26 : 2 }}
+                        className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg"
+                        animate={{ left: notifications ? '26px' : '2px' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
-                    </motion.button>
+                    </button>
                   </div>
 
                   {/* Autoplay */}
@@ -387,36 +352,32 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
                       )}
                       <span className="text-body text-primary">Autoplay Videos</span>
                     </div>
-                    <motion.button
+                    <button
                       onClick={() => {
                         haptics.tap();
                         setAutoplay(!autoplay);
                       }}
-                      className={`w-12 h-6 rounded-full transition-colors ${
+                      className={`w-12 h-6 rounded-full transition-colors relative ${
                         autoplay ? 'bg-primary-500' : 'bg-surface-tertiary'
                       }`}
                     >
                       <motion.div
-                        className="w-5 h-5 bg-white rounded-full shadow-lg"
-                        animate={{ x: autoplay ? 26 : 2 }}
+                        className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg"
+                        animate={{ left: autoplay ? '26px' : '2px' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
-                    </motion.button>
+                    </button>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
 
         {/* Share App */}
         <motion.button
           onClick={handleShare}
           className="card-premium w-full flex items-center px-5 py-4 hover:bg-surface-secondary transition-colors"
-          variants={{
-            initial: { opacity: 0, x: -20 },
-            animate: { opacity: 1, x: 0 }
-          }}
           whileTap={{ scale: 0.98 }}
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-4">
@@ -433,10 +394,6 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
         <motion.button
           onClick={handleLogout}
           className="card-premium w-full flex items-center px-5 py-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-          variants={{
-            initial: { opacity: 0, x: -20 },
-            animate: { opacity: 1, x: 0 }
-          }}
           whileTap={{ scale: 0.98 }}
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mr-4">
@@ -447,8 +404,8 @@ const Profile: React.FC<ProfileProps> = ({ onToggleTheme, currentTheme = 'light'
             <p className="text-caption text-error/70">Sign out of your account</p>
           </div>
         </motion.button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

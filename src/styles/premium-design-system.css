@@ -581,5 +581,34 @@ body {
   box-shadow: 
     0 1px 3px rgba(0,0,0,0.3),
     0 1px 2px rgba(0,0,0,0.5),
-    0 -1px 0 rgba(255,255,255,0.05)
+    0 -1px 0 rgba(255,255,255,0.05) inset;
+}
+
+/* Utility Classes */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .text-display {
+    font-size: var(--text-3xl);
+  }
+  
+  .text-heading-1 {
+    font-size: var(--text-2xl);
+  }
+  
+  .text-heading-2 {
+    font-size: var(--text-xl);
+  }
+  
+  .text-heading-3 {
+    font-size: var(--text-lg);
+  }
 }

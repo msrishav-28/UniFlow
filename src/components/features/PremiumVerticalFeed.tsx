@@ -77,26 +77,14 @@ const PremiumFeedItem = memo<FeedItemProps>(({
 
   const getCategoryStyle = (category: string) => {
     const styles: Record<string, string> = {
-      technical: 'bg-gradient-to-r from-blue-500 to-blue-600',
-      cultural: 'bg-gradient-to-r from-purple-500 to-pink-500',
-      'guest-talks': 'bg-gradient-to-r from-emerald-500 to-teal-500',
-      'inter-college': 'bg-gradient-to-r from-orange-500 to-red-500',
-      'inter-department': 'bg-gradient-to-r from-rose-500 to-pink-500',
-      sports: 'bg-gradient-to-r from-yellow-500 to-orange-500'
+      technical: 'bg-blue-500',
+      cultural: 'bg-purple-500',
+      'guest-talks': 'bg-green-500',
+      'inter-college': 'bg-orange-500',
+      'inter-department': 'bg-red-500',
+      sports: 'bg-yellow-500'
     };
-    return styles[category] || 'bg-gradient-to-r from-gray-500 to-gray-600';
-  };
-
-  const getCategoryEmoji = (category: string) => {
-    const emojis: Record<string, string> = {
-      technical: '🚀',
-      cultural: '🎭',
-      'guest-talks': '🎤',
-      'inter-college': '🏆',
-      'inter-department': '⚔️',
-      sports: '💪'
-    };
-    return emojis[category] || '📅';
+    return styles[category] || 'bg-gray-500';
   };
 
   const handleBookmarkClick = () => {
@@ -171,7 +159,6 @@ const PremiumFeedItem = memo<FeedItemProps>(({
         transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
       >
         <div className={`${getCategoryStyle(item.category)} px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg`}>
-          <span className="text-lg">{getCategoryEmoji(item.category)}</span>
           <span className="text-white text-xs font-semibold tracking-wide uppercase">
             {item.category.replace('-', ' ')}
           </span>
@@ -259,10 +246,10 @@ const PremiumFeedItem = memo<FeedItemProps>(({
             <div className="glass-surface-elevated p-5 space-y-3">
               {/* Title & Date */}
               <div>
-                <h2 className="text-heading-2 text-white mb-1">
+                <h2 className="text-2xl font-bold text-white mb-1">
                   {item.eventTitle}
                 </h2>
-                <p className="text-body-sm text-white/80 flex items-center flex-wrap gap-2">
+                <p className="text-sm text-white/80 flex items-center flex-wrap gap-2">
                   <span className="flex items-center">
                     <Calendar size={14} className="mr-1.5" />
                     {formatDate(item.eventDate)}
@@ -281,7 +268,7 @@ const PremiumFeedItem = memo<FeedItemProps>(({
 
               {/* Description */}
               {item.description && (
-                <p className="text-body-sm text-white/70 line-clamp-2">
+                <p className="text-sm text-white/70 line-clamp-2">
                   {item.description}
                 </p>
               )}
@@ -309,8 +296,8 @@ const PremiumFeedItem = memo<FeedItemProps>(({
                     </span>
                   </div>
                   <div>
-                    <p className="text-caption text-white/60">Organized by</p>
-                    <p className="text-body-sm text-white font-medium">{item.organizer}</p>
+                    <p className="text-xs text-white/60">Organized by</p>
+                    <p className="text-sm text-white font-medium">{item.organizer}</p>
                   </div>
                 </div>
               )}
@@ -340,12 +327,12 @@ const PremiumFeedItem = memo<FeedItemProps>(({
               <div className="p-6 space-y-4 overflow-y-auto">
                 <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-4" />
                 
-                <h2 className="text-heading-1 text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   {item.eventTitle}
                 </h2>
                 
                 {item.description && (
-                  <p className="text-body text-white/80 leading-relaxed">
+                  <p className="text-base text-white/80 leading-relaxed">
                     {item.description}
                   </p>
                 )}
@@ -354,8 +341,8 @@ const PremiumFeedItem = memo<FeedItemProps>(({
                   <div className="flex items-center text-white/80">
                     <Calendar size={20} className="mr-3 text-white/60" />
                     <div>
-                      <p className="text-body font-medium">{formatDate(item.eventDate)}</p>
-                      <p className="text-caption text-white/60">
+                      <p className="text-base font-medium">{formatDate(item.eventDate)}</p>
+                      <p className="text-sm text-white/60">
                         {new Date(item.eventDate).toLocaleDateString('en-US', { 
                           weekday: 'long',
                           year: 'numeric',
@@ -370,8 +357,8 @@ const PremiumFeedItem = memo<FeedItemProps>(({
                     <div className="flex items-center text-white/80">
                       <MapPin size={20} className="mr-3 text-white/60" />
                       <div>
-                        <p className="text-body font-medium">{item.location}</p>
-                        <p className="text-caption text-white/60">Venue</p>
+                        <p className="text-base font-medium">{item.location}</p>
+                        <p className="text-sm text-white/60">Venue</p>
                       </div>
                     </div>
                   )}
@@ -380,8 +367,8 @@ const PremiumFeedItem = memo<FeedItemProps>(({
                     <div className="flex items-center text-white/80">
                       <Users size={20} className="mr-3 text-white/60" />
                       <div>
-                        <p className="text-body font-medium">{item.organizer}</p>
-                        <p className="text-caption text-white/60">Organizer</p>
+                        <p className="text-base font-medium">{item.organizer}</p>
+                        <p className="text-sm text-white/60">Organizer</p>
                       </div>
                     </div>
                   )}
@@ -389,7 +376,7 @@ const PremiumFeedItem = memo<FeedItemProps>(({
 
                 {item.tags && item.tags.length > 0 && (
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-caption text-white/60 mb-3">Tags</p>
+                    <p className="text-sm text-white/60 mb-3">Tags</p>
                     <div className="flex flex-wrap gap-2">
                       {item.tags.map((tag: string, index: number) => (
                         <span
@@ -444,6 +431,8 @@ const PremiumFeedItem = memo<FeedItemProps>(({
     prevProps.item.isBookmarked === nextProps.item.isBookmarked
   );
 });
+
+PremiumFeedItem.displayName = 'PremiumFeedItem';
 
 // Main VerticalFeed Component
 interface PremiumVerticalFeedProps {
@@ -592,8 +581,8 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
           >
             <RefreshCw size={32} className="text-white" />
           </motion.div>
-          <h2 className="text-heading-2 text-primary mb-2">No events found</h2>
-          <p className="text-body text-secondary">Pull down to refresh</p>
+          <h2 className="text-2xl font-bold text-primary mb-2">No events found</h2>
+          <p className="text-base text-secondary">Pull down to refresh</p>
         </motion.div>
       </div>
     );
@@ -612,7 +601,7 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
           >
             <div className="flex items-center justify-center">
               <WifiOff size={18} className="text-error mr-2" />
-              <span className="text-body-sm font-medium text-primary">You're offline</span>
+              <span className="text-sm font-medium text-primary">You're offline</span>
             </div>
           </motion.div>
         )}
@@ -636,7 +625,7 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
           >
             <RefreshCw size={18} className="text-primary mr-2" />
           </motion.div>
-          <span className="text-body-sm font-medium text-primary">
+          <span className="text-sm font-medium text-primary">
             {pullDistance.get() > 80 ? 'Release to refresh' : 'Pull to refresh'}
           </span>
         </motion.div>
@@ -689,7 +678,7 @@ const PremiumVerticalFeed: React.FC<PremiumVerticalFeedProps> = ({ items }) => {
               />
             ))}
           </div>
-          <span className="text-caption text-white font-medium">
+          <span className="text-xs text-white font-medium">
             {currentIndex + 1} / {items.length}
           </span>
         </div>

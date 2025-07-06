@@ -9,11 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'College Events - Discover Amazing Events',
-        short_name: 'CollegeEvents',
-        description: 'Discover college events through beautiful media with modern glassmorphism design',
-        theme_color: '#6366f1',
-        background_color: '#0f0f0f',
+        name: 'UniFlow - Events in Motion',
+        short_name: 'UniFlow',
+        description: 'Discover amazing college events with modern design',
+        theme_color: '#3b82f6',
+        background_color: '#0a0a0a',
         display: 'standalone',
         scope: '/',
         start_url: '/',
@@ -38,7 +38,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,mp4,webm}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/images\.pexels\.com/,
@@ -52,13 +52,13 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/sample-videos\.com/,
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'sample-videos',
+              cacheName: 'google-fonts',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               }
             }
           }
@@ -66,7 +66,31 @@ export default defineConfig({
       }
     })
   ],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'firebase-vendor': ['firebase/app', 'firebase/firestore', 'firebase/storage', 'firebase/analytics']
+        }
+      }
+    },
+    target: 'es2015',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react'],
+    exclude: []
+  },
+  server: {
+    port: 5173,
+    host: true
+  }
 });
